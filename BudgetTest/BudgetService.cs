@@ -51,7 +51,17 @@ public class BudgetService
     private Budget GetMonthBudget(DateTime date)
     {
         var budgets = _budgetRepo.GetAll();
-        return budgets.FirstOrDefault(x => x.YearMonth == $"{date:yyyyMM}");
+        var budget = budgets.FirstOrDefault(x => x.YearMonth == $"{date:yyyyMM}");
+        if (budget == null)
+        {
+            return new Budget
+            {
+                YearMonth = date.ToString("yyyyMM"),
+                Amount = 0
+            };
+        }
+
+        return budget;
     }
 
     private static int GetDayDiff(DateTime start, DateTime end)

@@ -15,40 +15,30 @@ public class BudgetService
 
     public decimal Query(DateTime start, DateTime end)
     {
-        if (end < start)
-            return 0m;
+        if (end < start) return 0m;
 
-        if (start.ToString("yyyyMM") != end.ToString("yyyyMM"))
+        var monthPerDayAmountMap = new Dictionary<string, int>();
+
+        var result = 0m;
+        while (start <= end)
         {
-            var result = 0m;
-            var currentStart = start.AddMonths(1);
-
-            while (currentStart < end)
-            {
-                var monthBudget = GetMonthBudget(currentStart);
-                result += monthBudget.Amount;
-                currentStart = currentStart.AddMonths(1);
+            var monthYear = start.ToString("yyyyMM");
+            int monthPerDayAmount;
+            if(monthPerDayAmountMap.ContainsKey(monthYear))
+            { 
+                monthPerDayAmount = monthPerDayAmountMap[monthYear];
             }
-            
-            var budgetStart = GetMonthBudget(start);
-            var budgetEnd = GetMonthBudget(end);
-            
-            var startBudgetPerDay = GetBudgetPerDay(start , budgetStart.Amount);
-            var endBudgetPerDay = GetBudgetPerDay(end , budgetEnd.Amount);
-            
-            var dayDiffStart = GetDayDiff(start, new DateTime(start.Year,start.Month,DateTime.DaysInMonth(start.Year,start.Month)));
-            var dayDiffEnd = GetDayDiff(new DateTime(end.Year,end.Month,01), end);
-            
-            var startAmount = CalculateAmount(dayDiffStart , startBudgetPerDay);
-            var endAmount = CalculateAmount(dayDiffEnd , endBudgetPerDay);
-            
-            var amount = startAmount + endAmount;
-            return result + amount;
-        }   
-        var budget = GetMonthBudget(start);
-        var budgetPerDay = GetBudgetPerDay(start, budget.Amount);
-        var diffDays = GetDayDiff(start, end);
-        return CalculateAmount(diffDays, budgetPerDay);
+            else
+            {
+                var budget = GetMonthBudget(start);
+                monthPerDayAmount = GetBudgetPerDay(start , budget.Amount);
+                monthPerDayAmountMap.Add(monthYear, monthPerDayAmount);
+            }
+           
+            result += monthPerDayAmount;
+            start = start.AddDays(1);
+        }
+        return result * 100 / 100m;
     }
 
     private Budget GetMonthBudget(DateTime date)

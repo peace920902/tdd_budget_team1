@@ -23,6 +23,13 @@ public class BudgetTest
     }
 
     [Fact]
+    public void Invalid_Input()
+    {
+        var result = _budgetService.Query(new DateTime(2022, 12, 3), new DateTime(2022, 10, 31));
+        result.Should().Be(0);
+    }
+
+    [Fact]
     public void Partial_Month()
     {
         GivenBudgets(new List<Budget>()
@@ -67,6 +74,7 @@ public class BudgetTest
         var result = _budgetService.Query(new DateTime(2022, 10, 31), new DateTime(2022, 11, 5));
         result.Should().Be(150m);
     }
+
     [Fact]
     public void Cross_Over_Two_Month()
     {
